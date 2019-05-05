@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools" android:id="@+id/mobile_navigation"
+            app:startDestination="@id/profileFragment">
+
+    <fragment android:id="@+id/profileFragment" android:name="me.duras.laserprofile.ProfileFragment"
+              android:label="profile_fragment" tools:layout="@layout/profile_fragment">
+        <action android:id="@+id/action_profileFragment_to_gamesFragment" app:destination="@id/gamesFragment"/>
+        <action android:id="@+id/action_profileFragment_to_rankingsFragment" app:destination="@id/rankingsFragment"/>
+    </fragment>
+    <fragment android:id="@+id/gamesFragment" android:name="me.duras.laserprofile.GamesFragment"
+              android:label="fragment_game_list" tools:layout="@layout/fragment_game_list">
+        <action android:id="@+id/action_gamesFragment_to_profileFragment" app:destination="@id/profileFragment"/>
+    </fragment>
+    <fragment android:id="@+id/rankingsFragment" android:name="me.duras.laserprofile.RankingsFragment"
+              android:label="fragment_ranking_list" tools:layout="@layout/fragment_ranking_list">
+        <action android:id="@+id/action_rankingsFragment_to_profileFragment" app:destination="@id/profileFragment"/>
+        <action android:id="@+id/action_rankingsFragment_to_gamesFragment" app:destination="@id/gamesFragment"/>
+    </fragment>
+</navigation>
