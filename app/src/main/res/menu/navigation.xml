@@ -3,17 +3,17 @@
 
     <item
             android:id="@+id/gamesFragment"
-            android:icon="@drawable/ic_home_black_24dp"
+            android:icon="@drawable/ic_baseline_history_24px"
             android:title="@string/title_games"/>
 
     <item
             android:id="@+id/profileFragment"
-            android:icon="@drawable/ic_dashboard_black_24dp"
+            android:icon="@drawable/ic_baseline_person_24px"
             android:title="@string/title_home"/>
 
     <item
             android:id="@+id/rankingsFragment"
-            android:icon="@drawable/ic_notifications_black_24dp"
+            android:icon="@drawable/ic_baseline_bar_chart_24px"
             android:title="@string/title_rankings"/>
 
 </menu>

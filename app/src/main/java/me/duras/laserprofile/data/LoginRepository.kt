@@ -1,46 +1,62 @@
 package me.duras.laserprofile.data
 
-import me.duras.laserprofile.data.model.LoggedInUser
+import me.duras.laserprofile.data.model.TokenResponse
+import me.duras.laserprofile.data.model.User
 
 /**
- * Class that requests authentication and user information from the remote data source and
- * maintains an in-memory cache of login status and user credentials information.
+ * Class that requests authentication and user information from the remote data source
  */
 
 class LoginRepository(val dataSource: LoginDataSource) {
 
-    // in-memory cache of the loggedInUser object
-    var user: LoggedInUser? = null
+    // in-memory cache of the user
+    var user: User? = null
+        private set
+
+    // in-memory cache of the refresh token
+    var refreshToken: String? = null
+        private set
+
+    // in-memory cache of the access token
+    var accessToken: String? = null
         private set
 
     val isLoggedIn: Boolean
         get() = user != null
 
     init {
-        // If user credentials will be cached in local storage, it is recommended it be encrypted
-        // @see https://developer.android.com/training/articles/keystore
         user = null
+        refreshToken = null
+        accessToken = null
     }
 
-    fun logout() {
-        user = null
-        dataSource.logout()
-    }
-
-    fun login(username: String, password: String): Result<LoggedInUser> {
+    fun login(email: String, password: String): Result<TokenResponse> {
         // handle login
-        val result = dataSource.login(username, password)
-
-        if (result is Result.Success) {
-            setLoggedInUser(result.data)
+        val result = dataSource.login(email, password)
+        if (result !is Result.Success) {
+            return result
         }
+        setRefreshToken(result.data.token)
+
+        val tokenResult = dataSource.getAccessToken(result.data.token);
+        if (tokenResult !is Result.Success) {
+            return result
+        }
+        setAccessToken(tokenResult.data.token)
+        setLoggedInUser(tokenResult.data.user)
 
         return result
     }
 
-    private fun setLoggedInUser(loggedInUser: LoggedInUser) {
+    private fun setLoggedInUser(loggedInUser: User) {
         this.user = loggedInUser
-        // If user credentials will be cached in local storage, it is recommended it be encrypted
-        // @see https://developer.android.com/training/articles/keystore
+    }
+
+    private fun setRefreshToken(refreshToken: String) {
+        this.refreshToken = refreshToken
+    }
+
+    private fun setAccessToken(accessToken: String) {
+        this.accessToken = accessToken
     }
 }

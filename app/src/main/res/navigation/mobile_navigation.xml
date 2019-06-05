@@ -6,16 +6,26 @@
 
     <fragment android:id="@+id/profileFragment" android:name="me.duras.laserprofile.ProfileFragment"
               android:label="profile_fragment" tools:layout="@layout/profile_fragment">
-        <action android:id="@+id/action_profileFragment_to_gamesFragment" app:destination="@id/gamesFragment"/>
-        <action android:id="@+id/action_profileFragment_to_rankingsFragment" app:destination="@id/rankingsFragment"/>
+        <action android:id="@+id/action_profileFragment_to_gamesFragment" app:destination="@id/gamesFragment"
+                app:enterAnim="@anim/nav_default_enter_anim" app:exitAnim="@anim/nav_default_exit_anim"
+                app:popEnterAnim="@anim/nav_default_pop_enter_anim" app:popExitAnim="@anim/nav_default_pop_exit_anim"/>
+        <action android:id="@+id/action_profileFragment_to_rankingsFragment" app:destination="@id/rankingsFragment"
+                app:enterAnim="@anim/nav_default_enter_anim" app:exitAnim="@anim/nav_default_exit_anim"
+                app:popEnterAnim="@anim/nav_default_pop_enter_anim" app:popExitAnim="@anim/nav_default_pop_exit_anim"/>
     </fragment>
     <fragment android:id="@+id/gamesFragment" android:name="me.duras.laserprofile.GamesFragment"
               android:label="fragment_game_list" tools:layout="@layout/fragment_game_list">
-        <action android:id="@+id/action_gamesFragment_to_profileFragment" app:destination="@id/profileFragment"/>
+        <action android:id="@+id/action_gamesFragment_to_profileFragment" app:destination="@id/profileFragment"
+                app:enterAnim="@anim/nav_default_enter_anim" app:exitAnim="@anim/nav_default_exit_anim"
+                app:popEnterAnim="@anim/nav_default_pop_enter_anim" app:popExitAnim="@anim/nav_default_pop_exit_anim"/>
     </fragment>
     <fragment android:id="@+id/rankingsFragment" android:name="me.duras.laserprofile.RankingsFragment"
               android:label="fragment_ranking_list" tools:layout="@layout/fragment_ranking_list">
-        <action android:id="@+id/action_rankingsFragment_to_profileFragment" app:destination="@id/profileFragment"/>
-        <action android:id="@+id/action_rankingsFragment_to_gamesFragment" app:destination="@id/gamesFragment"/>
+        <action android:id="@+id/action_rankingsFragment_to_profileFragment" app:destination="@id/profileFragment"
+                app:enterAnim="@anim/nav_default_enter_anim" app:exitAnim="@anim/nav_default_exit_anim"
+                app:popEnterAnim="@anim/nav_default_pop_enter_anim" app:popExitAnim="@anim/nav_default_pop_exit_anim"/>
+        <action android:id="@+id/action_rankingsFragment_to_gamesFragment" app:destination="@id/gamesFragment"
+                app:enterAnim="@anim/nav_default_enter_anim" app:exitAnim="@anim/nav_default_exit_anim"
+                app:popEnterAnim="@anim/nav_default_pop_enter_anim" app:popExitAnim="@anim/nav_default_pop_exit_anim"/>
     </fragment>
 </navigation>

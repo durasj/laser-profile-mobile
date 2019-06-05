@@ -4,60 +4,59 @@ import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-
 
 import me.duras.laserprofile.GamesFragment.OnListFragmentInteractionListener
-import me.duras.laserprofile.dummy.DummyContent.DummyItem
 
-import kotlinx.android.synthetic.main.fragment_game.view.*
+import kotlinx.android.synthetic.main.game_list_view.view.*
+import me.duras.laserprofile.data.db.Game
 
 /**
- * [RecyclerView.Adapter] that can display a [DummyItem] and makes a call to the
+ * [RecyclerView.Adapter] that can display a [Games] and makes a call to the
  * specified [OnListFragmentInteractionListener].
- * TODO: Replace the implementation with code for your data type.
  */
 class GameRecyclerViewAdapter(
-    private val mValues: List<DummyItem>,
-    private val mListener: OnListFragmentInteractionListener?
+    private var games: List<Game>,
+    private val listener: OnListFragmentInteractionListener?
 ) : RecyclerView.Adapter<GameRecyclerViewAdapter.ViewHolder>() {
 
-    private val mOnClickListener: View.OnClickListener
+    private val onClickListener: View.OnClickListener
 
     init {
-        mOnClickListener = View.OnClickListener { v ->
-            val item = v.tag as DummyItem
-            // Notify the active callbacks interface (the activity, if the fragment is attached to
-            // one) that an item has been selected.
-            mListener?.onListFragmentInteraction(item)
+        onClickListener = View.OnClickListener { v ->
+            listener?.onListFragmentInteraction(Integer.valueOf(v.gameId.text as String))
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.fragment_game, parent, false)
+            .inflate(R.layout.game_list_view, parent, false)
         return ViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = mValues[position]
-        holder.mIdView.text = item.id
-        holder.mContentView.text = item.content
+        val item = games[position]
 
-        with(holder.mView) {
-            tag = item
-            setOnClickListener(mOnClickListener)
+        with(holder.view) {
+            holder.game = item
+            setOnClickListener(onClickListener)
         }
     }
 
-    override fun getItemCount(): Int = mValues.size
+    override fun getItemCount(): Int = games.size
 
-    inner class ViewHolder(val mView: View) : RecyclerView.ViewHolder(mView) {
-        val mIdView: TextView = mView.item_number
-        val mContentView: TextView = mView.content
+    fun setData(newData: List<Game>) {
+        this.games = newData
+        notifyDataSetChanged()
+    }
 
-        override fun toString(): String {
-            return super.toString() + " '" + mContentView.text + "'"
-        }
+    inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
+        var game: Game? = null
+            set(value) {
+                field = value
+                view.gameId.text = value?.id.toString()
+                view.name.text = "${value?.players} players ${value?.teams}"
+                view.timeAgo.text = value?.ago
+                view.points.text = "${value?.points}p"
+            }
     }
 }

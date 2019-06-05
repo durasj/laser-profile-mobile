@@ -1,5 +1,6 @@
 package me.duras.laserprofile.ui.login
 
+import android.os.AsyncTask
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -17,20 +18,34 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
     private val _loginResult = MutableLiveData<LoginResult>()
     val loginResult: LiveData<LoginResult> = _loginResult
 
-    fun login(username: String, password: String) {
-        // can be launched in a separate asynchronous job
-        val result = loginRepository.login(username, password)
+    class LoginTask(
+        private val loginResult: MutableLiveData<LoginResult>,
+        private val loginRepository: LoginRepository,
+        private val username: String,
+        private val password: String
+    ) : AsyncTask<Unit, LoginResult, LoginResult>() {
+        override fun doInBackground(vararg params: Unit?): LoginResult {
+            val result = loginRepository.login(username, password)
 
-        if (result is Result.Success) {
-            _loginResult.value = LoginResult(success = LoggedInUserView(displayName = result.data.displayName))
-        } else {
-            _loginResult.value = LoginResult(error = R.string.login_failed)
+            return if (result is Result.Success) {
+                LoginResult(success = result.data)
+            } else {
+                LoginResult(error = result.toString())
+            }
         }
+
+        override fun onPostExecute(result: LoginResult?) {
+            loginResult.value = result
+        }
+    }
+
+    fun login(username: String, password: String) {
+        LoginTask(_loginResult, loginRepository, username, password).execute()
     }
 
     fun loginDataChanged(username: String, password: String) {
         if (!isUserNameValid(username)) {
-            _loginForm.value = LoginFormState(usernameError = R.string.invalid_username)
+            _loginForm.value = LoginFormState(usernameError = R.string.invalid_email)
         } else if (!isPasswordValid(password)) {
             _loginForm.value = LoginFormState(passwordError = R.string.invalid_password)
         } else {
@@ -38,17 +53,11 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
         }
     }
 
-    // A placeholder username validation check
     private fun isUserNameValid(username: String): Boolean {
-        return if (username.contains('@')) {
-            Patterns.EMAIL_ADDRESS.matcher(username).matches()
-        } else {
-            username.isNotBlank()
-        }
+        return (!username.isBlank() && Patterns.EMAIL_ADDRESS.matcher(username).matches())
     }
 
-    // A placeholder password validation check
     private fun isPasswordValid(password: String): Boolean {
-        return password.length > 5;
+        return password.length > 5
     }
 }

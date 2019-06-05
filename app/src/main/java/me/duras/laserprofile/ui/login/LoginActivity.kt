@@ -1,35 +1,46 @@
 package me.duras.laserprofile.ui.login
 
 import android.app.Activity
+import android.content.Intent
+import android.os.AsyncTask
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
-import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.Button
 import android.widget.EditText
-import android.widget.ProgressBar
 import android.widget.Toast
+import kotlinx.android.synthetic.main.activity_login.*
+import me.duras.laserprofile.LaserProfileApplication
+import me.duras.laserprofile.MainActivity
 
 import me.duras.laserprofile.R
+import me.duras.laserprofile.data.model.User
+import me.duras.laserprofile.data.db.User as UserEntity
+import android.net.Uri
 
+
+// Generated via Android Studio and modified
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var loginViewModel: LoginViewModel
+
+    class SaveUserTask(
+        private var user: UserEntity
+    ) : AsyncTask<Unit, Unit, Unit>() {
+        override fun doInBackground(vararg params: Unit?) {
+            LaserProfileApplication.db?.userDao()?.insert(user)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_login)
-
-        val username = findViewById<EditText>(R.id.username)
-        val password = findViewById<EditText>(R.id.password)
-        val login = findViewById<Button>(R.id.login)
-        val loading = findViewById<ProgressBar>(R.id.loading)
 
         loginViewModel = ViewModelProviders.of(this, LoginViewModelFactory())
             .get(LoginViewModel::class.java)
@@ -56,12 +67,28 @@ class LoginActivity : AppCompatActivity() {
                 showLoginFailed(loginResult.error)
             }
             if (loginResult.success != null) {
-                updateUiWithUser(loginResult.success)
-            }
-            setResult(Activity.RESULT_OK)
+                val tokenParts = loginResult.success.token.split(" ")
+                val refreshToken = tokenParts[0]
+                val accessToken = tokenParts[1]
+                val user = loginResult.success.user
+                SaveUserTask(
+                    UserEntity(
+                        id = user.id,
+                        email = user.email,
+                        nick = user.nick,
+                        role = user.role,
+                        accessToken = accessToken,
+                        refreshToken = refreshToken
+                    )
+                ).execute()
 
-            //Complete and destroy login activity once successful
-            finish()
+                continueToMainActivity(loginResult.success.user)
+
+                setResult(Activity.RESULT_OK)
+
+                //Complete and destroy login activity once successful
+                finish()
+            }
         })
 
         username.afterTextChanged {
@@ -81,11 +108,13 @@ class LoginActivity : AppCompatActivity() {
 
             setOnEditorActionListener { _, actionId, _ ->
                 when (actionId) {
-                    EditorInfo.IME_ACTION_DONE ->
+                    EditorInfo.IME_ACTION_DONE -> {
+                        loading.visibility = View.VISIBLE
                         loginViewModel.login(
                             username.text.toString(),
                             password.text.toString()
                         )
+                    }
                 }
                 false
             }
@@ -97,19 +126,25 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateUiWithUser(model: LoggedInUserView) {
-        val welcome = getString(R.string.welcome)
-        val displayName = model.displayName
-        // TODO : initiate successful logged in experience
+    private fun continueToMainActivity(model: User) {
+        val displayName = model.nick
         Toast.makeText(
             applicationContext,
-            "$welcome $displayName",
+            "Welcome $displayName!",
             Toast.LENGTH_LONG
         ).show()
+
+        val activityIntent = Intent(this, MainActivity::class.java)
+        startActivity(activityIntent)
     }
 
-    private fun showLoginFailed(@StringRes errorString: Int) {
+    private fun showLoginFailed(errorString: String) {
         Toast.makeText(applicationContext, errorString, Toast.LENGTH_SHORT).show()
+    }
+
+    fun openForgotPassword(view: View) {
+        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://laserprofile.app"))
+        startActivity(browserIntent)
     }
 }
 

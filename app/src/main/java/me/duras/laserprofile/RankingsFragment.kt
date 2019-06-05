@@ -9,9 +9,11 @@ import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-
-import me.duras.laserprofile.dummy.DummyContent
-import me.duras.laserprofile.dummy.DummyContent.DummyItem
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import com.google.android.material.tabs.TabLayout
+import kotlinx.android.synthetic.main.fragment_ranking_list.*
+import me.duras.laserprofile.data.db.Game
 
 /**
  * A fragment representing a list of Items.
@@ -20,18 +22,7 @@ import me.duras.laserprofile.dummy.DummyContent.DummyItem
  */
 class RankingsFragment : Fragment() {
 
-    // TODO: Customize parameters
-    private var columnCount = 1
-
-    private var listener: OnListFragmentInteractionListener? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        arguments?.let {
-            columnCount = it.getInt(ARG_COLUMN_COUNT)
-        }
-    }
+    private var viewModel: RankingsViewModel? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -39,55 +30,49 @@ class RankingsFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_ranking_list, container, false)
 
-        // Set the adapter
-        if (view is RecyclerView) {
-            with(view) {
-                layoutManager = when {
-                    columnCount <= 1 -> LinearLayoutManager(context)
-                    else -> GridLayoutManager(context, columnCount)
-                }
-                adapter = RankingRecyclerViewAdapter(DummyContent.ITEMS, listener)
+        viewModel = ViewModelProviders.of(this).get(RankingsViewModel::class.java)
+        viewModel!!.getWeeklyGames().observe(this, Observer { games ->
+            if (games !== null) {
+                (rankingsList.adapter as RankingRecyclerViewAdapter).setData(games)
             }
-        }
+        })
+
         return view
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is OnListFragmentInteractionListener) {
-            listener = context
-        } else {
-            throw RuntimeException(context.toString() + " must implement OnListFragmentInteractionListener")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val fragmentContext = context
+
+        // Set the adapter
+        with(rankingsList) {
+            layoutManager = LinearLayoutManager(fragmentContext)
+            adapter = RankingRecyclerViewAdapter(viewModel!!.getWeeklyGames().value ?: ArrayList<Game>())
         }
-    }
 
-    override fun onDetach() {
-        super.onDetach()
-        listener = null
-    }
+        rankingTabs.addOnTabSelectedListener(object :
+            TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) {
+                if(tab.position == 0) {
+                    viewModel!!.getWeeklyGames()
+                }
+                if(tab.position == 1) {
+                    viewModel!!.getMonthlyGames()
+                }
+                if(tab.position == 2) {
+                    viewModel!!.getYearlyGames()
+                }
+            }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     *
-     *
-     * See the Android Training lesson
-     * [Communicating with Other Fragments](http://developer.android.com/training/basics/fragments/communicating.html)
-     * for more information.
-     */
-    interface OnListFragmentInteractionListener {
-        // TODO: Update argument type and name
-        fun onListFragmentInteraction(item: DummyItem?)
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+        })
     }
 
     companion object {
 
-        // TODO: Customize parameter argument names
         const val ARG_COLUMN_COUNT = "column-count"
 
-        // TODO: Customize parameter initialization
         @JvmStatic
         fun newInstance(columnCount: Int) =
             RankingsFragment().apply {
